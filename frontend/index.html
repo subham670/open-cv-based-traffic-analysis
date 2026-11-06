@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FlowPulse ITMS™ - Autonomous Urban Traffic Intelligence & Telemetry</title>
+  <meta name="description" content="Production Computer Vision-based Real-Time Urban Traffic Analysis, Speed Radar, HCM LOS Classification, and Predictive Peak Forecasting System.">
+  <link rel="stylesheet" href="index.css">
+  <!-- Chart.js for High-Precision Telemetry & Forecasting Graphs -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+  <!-- Top Enterprise Navigation Header -->
+  <header class="app-header">
+    <div class="brand-section">
+      <div class="brand-logo-glow" id="brand-logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+        </svg>
+      </div>
+      <div class="brand-title-wrap">
+        <h1 id="app-title">
+          FlowPulse ITMS
+          <span class="version-tag" id="app-version-badge">v2.4.0-PROD</span>
+        </h1>
+      </div>
+    </div>
+
+    <!-- Center System Health & UTC Telemetry Clock -->
+    <div class="header-status-ribbon">
+      <div class="status-pill" id="system-status-indicator">
+        <div class="pulse-dot"></div>
+        <span id="engine-status-text">AI INFERENCE ACTIVE (ONNX + CV)</span>
+      </div>
+      <div class="status-pill" id="live-clock-pill">
+        <span id="live-clock">--:--:-- UTC</span>
+      </div>
+    </div>
+
+    <!-- Header Actions -->
+    <div class="header-actions">
+      <button class="btn btn-secondary" id="btn-calibrate-tripwires" title="Calibrate Tripwire Counting Lines">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 21v-7m0-4V3m8 18v-9m0-4V3m8 18v-5m0-4V3M1 14h6m2-6h6m2 8h6"/></svg>
+        Tripwires
+      </button>
+      <button class="btn btn-secondary" id="btn-open-upload" title="Upload Custom Traffic Video">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Feed Upload
+      </button>
+      <button class="btn btn-primary" id="btn-export-csv" title="Export Analytics to CSV">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Export Audit
+      </button>
+    </div>
+  </header>
+
+  <!-- Camera Source Selectors & HUD Overlay Switcher -->
+  <section class="controls-ribbon">
+    <div class="camera-tabs" id="camera-tabs-list">
+      <button class="cam-tab active" data-source="synthetic_highway" id="tab-cam-highway">
+        <div class="cam-tab-dot"></div>
+        CAM-01: Metro Arterial Highway
+      </button>
+      <button class="cam-tab" data-source="synthetic_intersection" id="tab-cam-intersection">
+        <div class="cam-tab-dot"></div>
+        CAM-02: Downtown Cross-Junction
+      </button>
+      <button class="cam-tab" data-source="webcam" id="tab-cam-webcam">
+        <div class="cam-tab-dot"></div>
+        CAM-03: Live Optical / USB Webcam
+      </button>
+      <button class="cam-tab" data-source="custom_file" id="tab-cam-custom" style="display: none;">
+        <div class="cam-tab-dot"></div>
+        CAM-04: User Uploaded Feed
+      </button>
+    </div>
+
+    <div class="hud-toggles" id="hud-toggles-bar">
+      <label class="toggle-label" title="Show Vehicle Bounding Boxes">
+        <input type="checkbox" id="toggle-boxes" checked> Bounding Boxes
+      </label>
+      <label class="toggle-label" title="Show Trajectory Motion Trails">
+        <input type="checkbox" id="toggle-trails" checked> Motion Trails
+      </label>
+      <label class="toggle-label" title="Show Speed Radar Tags">
+        <input type="checkbox" id="toggle-speed" checked> Speed Radar
+      </label>
+      <label class="toggle-label" title="Show Tripwire Counting Lines">
+        <input type="checkbox" id="toggle-tripwires" checked> Tripwires
+      </label>
+      <label class="toggle-label" title="Show Lane Partitions">
+        <input type="checkbox" id="toggle-lanes" checked> Lane Zones
+      </label>
+      <label class="toggle-label" title="Show Top Enterprise Telemetry HUD">
+        <input type="checkbox" id="toggle-hud" checked> Video HUD
+      </label>
+    </div>
+  </section>
+
+  <!-- Main Dashboard Grid -->
+  <main class="dashboard-container">
+
+    <!-- Top Grid: Live Stream + Real-Time Telemetry & LOS Hero Deck -->
+    <div class="top-stage-grid">
+
+      <!-- Left: Real-Time Stream Video Player -->
+      <section class="card video-player-card" id="card-video-stream">
+        <div class="card-header">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+            Active Optical Sensor Stream
+          </div>
+          <div class="video-badges">
+            <div class="rec-badge" id="badge-stream-rec">
+              <span class="rec-dot"></span> LIVE 60 FPS
+            </div>
+            <div class="cam-badge" id="badge-active-camera-name">
+              CAM-01: ARTERIAL HIGHWAY
+            </div>
+          </div>
+        </div>
+
+        <div class="video-wrapper" id="video-stream-container">
+          <!-- Tactical HUD Corners -->
+          <div class="tactical-corner corner-tl"></div>
+          <div class="tactical-corner corner-tr"></div>
+          <div class="tactical-corner corner-bl"></div>
+          <div class="tactical-corner corner-br"></div>
+
+          <!-- Video Stream Img Element -->
+          <img
+            id="main-video-feed"
+            class="live-mjpeg-stream"
+            src="/api/stream"
+            alt="Real-time Computer Vision Annotated Traffic Stream"
+          />
+        </div>
+
+        <div class="video-player-footer">
+          <div class="player-info-tags">
+            <span id="player-fps-tag">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg>
+              FPS: <strong id="val-fps">60.0</strong>
+            </span>
+            <span id="player-res-tag">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+              RES: <strong>960x540 NATIVE</strong>
+            </span>
+            <span id="player-model-tag">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              ENGINE: <strong>NANODET-ONNX + MOG2</strong>
+            </span>
+          </div>
+
+          <div class="player-actions">
+            <button class="btn btn-secondary" id="btn-snapshot-frame" title="Capture Snapshot Frame">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              Snapshot
+            </button>
+            <button class="btn btn-secondary" id="btn-reset-counters" title="Reset Tripwire Counters">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+              Reset Counts
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right: Real-Time Telemetry & LOS Hero Deck -->
+      <section class="telemetry-column" id="telemetry-deck">
+
+        <!-- Highway Capacity Manual (HCM) LOS Card -->
+        <div class="card los-card" id="card-los-gauge">
+          <div class="card-header">
+            <div class="card-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/></svg>
+              Level of Service (HCM Standard)
+            </div>
+          </div>
+
+          <div class="los-display-group">
+            <div class="los-badge-big" id="los-badge-box" style="background: #10b981;">
+              <span id="val-los-letter">A</span>
+              <span class="los-subtext">LOS GRADE</span>
+            </div>
+            <div class="los-meta-info">
+              <div class="los-flow-title" id="val-los-title">Free Flow (Optimal)</div>
+              <div class="los-flow-desc" id="val-los-description">
+                Traffic moving at free-flow speed. High maneuverability with minimal vehicular interaction.
+              </div>
+            </div>
+          </div>
+
+          <!-- Congestion Index Progress Bar -->
+          <div class="metric-bar-group">
+            <div class="metric-bar-header">
+              <span>CONGESTION INDEX</span>
+              <strong id="val-congestion-pct">14.2%</strong>
+            </div>
+            <div class="metric-bar-track">
+              <div class="metric-bar-fill" id="bar-congestion-fill" style="width: 14.2%; background: #10b981;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Real-Time Throughput Counters (Tripwire A & Tripwire B) -->
+        <div class="stats-grid-2x2">
+          <div class="stat-box" id="box-inbound-flow">
+            <div class="stat-box-title">
+              <span>INBOUND (LINE A)</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+            </div>
+            <div class="stat-box-value" id="val-inbound-count">0</div>
+            <div class="stat-box-sub" style="color: var(--accent-emerald);">Southbound Flow</div>
+          </div>
+
+          <div class="stat-box" id="box-outbound-flow">
+            <div class="stat-box-title">
+              <span>OUTBOUND (LINE B)</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+            </div>
+            <div class="stat-box-value" id="val-outbound-count">0</div>
+            <div class="stat-box-sub" style="color: var(--accent-cyan);">Northbound Flow</div>
+          </div>
+
+          <div class="stat-box" id="box-corridor-speed">
+            <div class="stat-box-title">
+              <span>CORRIDOR SPEED</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div class="stat-box-value" id="val-avg-speed">64.5 <span style="font-size: 0.9rem;">km/h</span></div>
+            <div class="stat-box-sub">Limit: 80 km/h</div>
+          </div>
+
+          <div class="stat-box" id="box-active-targets">
+            <div class="stat-box-title">
+              <span>ACTIVE TARGETS</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <div class="stat-box-value" id="val-active-vehicles">0</div>
+            <div class="stat-box-sub">Tracked In Frame</div>
+          </div>
+        </div>
+
+        <!-- Vehicle Classification Distribution -->
+        <div class="card" id="card-class-breakdown" style="padding: 16px;">
+          <div class="card-title" style="margin-bottom: 12px; font-size: 0.8rem;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+            Vehicle Classification Telemetry
+          </div>
+          <div class="class-breakdown-row">
+            <div class="class-pill">
+              <span class="class-pill-name">Cars</span>
+              <span class="class-pill-val" id="count-cars">0</span>
+            </div>
+            <div class="class-pill">
+              <span class="class-pill-name">Buses</span>
+              <span class="class-pill-val" id="count-buses">0</span>
+            </div>
+            <div class="class-pill">
+              <span class="class-pill-name">Trucks</span>
+              <span class="class-pill-val" id="count-trucks">0</span>
+            </div>
+            <div class="class-pill">
+              <span class="class-pill-name">Motorcycles</span>
+              <span class="class-pill-val" id="count-motorcycles">0</span>
+            </div>
+          </div>
+        </div>
+
+      </section>
+    </div>
+
+    <!-- Middle Section: AI Predictive Traffic Forecaster & Live Timeline -->
+    <div class="middle-analytics-grid">
+
+      <!-- AI 24-Hour Predictive Forecaster -->
+      <section class="card" id="card-predictive-forecaster">
+        <div class="card-header">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+            24-Hour AI Predictive Traffic Forecaster & Peak Window Detection
+          </div>
+          <span class="status-pill" style="font-size: 0.7rem; padding: 4px 10px;">
+            <span class="pulse-dot" style="background: var(--accent-cyan); box-shadow: 0 0 8px var(--accent-cyan);"></span>
+            Rolling Polynomial Diurnal Model
+          </span>
+        </div>
+
+        <div class="chart-wrapper">
+          <canvas id="forecastChart"></canvas>
+        </div>
+
+        <div class="forecast-meta-bar" id="forecast-advisory-bar">
+          <div class="forecast-alert-badge">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Predicted Peak Rush: <strong id="val-peak-hour" style="margin-left: 4px;">17:00 (1,580 vph)</strong>
+          </div>
+          <div id="val-advisory-recommendation" style="color: var(--text-secondary);">
+            Recommendation: Deploy adaptive signal timing; divert heavy freight to outer bypass.
+          </div>
+        </div>
+      </section>
+
+      <!-- Real-Time Speed vs Congestion & Lane Density Barometer -->
+      <section class="card" id="card-speed-density-trends">
+        <div class="card-header">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            Corridor Velocity & Density Trends
+          </div>
+        </div>
+
+        <div class="chart-wrapper" style="height: 160px;">
+          <canvas id="telemetryHistoryChart"></canvas>
+        </div>
+
+        <!-- Lane Occupancy Distribution -->
+        <div class="lane-barometers-wrap" id="lane-barometers">
+          <div class="lane-row">
+            <span class="lane-row-name">Lane 1</span>
+            <div class="lane-row-track"><div class="lane-row-fill" id="lane-fill-1" style="width: 25%;"></div></div>
+            <span class="lane-row-val" id="lane-val-1">0</span>
+          </div>
+          <div class="lane-row">
+            <span class="lane-row-name">Lane 2</span>
+            <div class="lane-row-track"><div class="lane-row-fill" id="lane-fill-2" style="width: 30%;"></div></div>
+            <span class="lane-row-val" id="lane-val-2">0</span>
+          </div>
+          <div class="lane-row">
+            <span class="lane-row-name">Lane 3</span>
+            <div class="lane-row-track"><div class="lane-row-fill" id="lane-fill-3" style="width: 20%;"></div></div>
+            <span class="lane-row-val" id="lane-val-3">0</span>
+          </div>
+          <div class="lane-row">
+            <span class="lane-row-name">Lane 4</span>
+            <div class="lane-row-track"><div class="lane-row-fill" id="lane-fill-4" style="width: 15%;"></div></div>
+            <span class="lane-row-val" id="lane-val-4">0</span>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- Bottom Section: Live Incidents & Safety Anomaly Dispatch Feed -->
+    <section class="card incidents-card" id="card-traffic-incidents">
+      <div class="card-header">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Live Traffic Safety Incidents & Bottleneck Dispatch Log
+        </div>
+        <span class="status-pill" id="badge-incident-count">0 Active Anomaly Alerts</span>
+      </div>
+
+      <div class="incidents-table-wrap">
+        <table class="incidents-table" id="incidents-table">
+          <thead>
+            <tr>
+              <th>Timestamp</th>
+              <th>Incident Type</th>
+              <th>Severity</th>
+              <th>Vehicle ID</th>
+              <th>Lane</th>
+              <th>Description / Telemetry</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="incidents-tbody">
+            <tr>
+              <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 24px;">
+                Monitoring corridor in real time. No safety incidents currently detected.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Tripwire Calibration Modal -->
+  <div class="modal-overlay" id="modal-tripwire-calibration">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">Tripwire Spatial Calibration</div>
+        <button class="btn-close" id="btn-close-tripwire-modal">&times;</button>
+      </div>
+      <p style="font-size: 0.8rem; color: var(--text-secondary);">
+        Fine-tune virtual tripwire trigger coordinates for inbound and outbound vehicular flow tracking.
+      </p>
+
+      <div class="slider-group">
+        <div class="slider-header">
+          <span>TRIPWIRE A (INBOUND - LINE Y)</span>
+          <strong id="val-slider-line-in">380 px</strong>
+        </div>
+        <input type="range" id="slider-line-in" min="150" max="500" value="380">
+      </div>
+
+      <div class="slider-group">
+        <div class="slider-header">
+          <span>TRIPWIRE B (OUTBOUND - LINE Y)</span>
+          <strong id="val-slider-line-out">260 px</strong>
+        </div>
+        <input type="range" id="slider-line-out" min="100" max="450" value="260">
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
+        <button class="btn btn-secondary" id="btn-cancel-tripwires">Cancel</button>
+        <button class="btn btn-primary" id="btn-save-tripwires">Apply Calibration</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Video File Upload Modal -->
+  <div class="modal-overlay" id="modal-upload">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">Upload Traffic Video Feed</div>
+        <button class="btn-close" id="btn-close-upload-modal">&times;</button>
+      </div>
+      <p style="font-size: 0.8rem; color: var(--text-secondary);">
+        Upload real highway or intersection footage (MP4, AVI, MOV) for live Deep Learning detection and analytics.
+      </p>
+
+      <div class="dropzone" id="upload-dropzone">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <div style="font-weight: 600; font-size: 0.95rem; margin-bottom: 4px;">Click or Drag & Drop Video File</div>
+        <div style="font-size: 0.75rem; color: var(--text-muted);">Supports MP4, AVI, MOV, WebM up to 250MB</div>
+        <input type="file" id="file-video-input" accept="video/*" style="display: none;">
+      </div>
+
+      <div id="upload-progress-wrap" style="display: none;">
+        <div class="metric-bar-header" style="margin-bottom: 4px;">
+          <span>Uploading and compiling tensors...</span>
+          <span id="upload-progress-pct">0%</span>
+        </div>
+        <div class="metric-bar-track">
+          <div class="metric-bar-fill" id="upload-progress-fill" style="width: 0%; background: var(--accent-cyan);"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Main Application Logic Script -->
+  <script src="app.js"></script>
+</body>
+</html>
